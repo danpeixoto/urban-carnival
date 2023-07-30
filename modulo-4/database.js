@@ -20,8 +20,7 @@ class Database {
     }
     async cadastrar(heroi) {
         const dados = await this.obterDadosArquivo();
-        const id = heroi.id <= 2 ? heroi.id : Date.now();
-        dados.push({ ...heroi, id });
+        dados.push(heroi);
         const resultado = await this.escreverArquivo(dados);
         return resultado;
     }
@@ -29,6 +28,34 @@ class Database {
         const dados = await this.obterDadosArquivo();
         const dadosFiltrados = dados.filter(dado => (id ? dado.id === id : true));
         return dadosFiltrados;
+    }
+    async remover(id) {
+        if (!id) {
+            return await this.escreverArquivo([]);
+        }
+        const dados = await this.obterDadosArquivo();
+        const indice = dados.findIndex((h) => h.id === parseInt(id));
+
+        if (indice === -1) {
+            throw Error('O usuário informado não existe');
+        }
+
+        dados.splice(indice, 1);
+        return await this.escreverArquivo(dados);
+    }
+
+    async atualizar(id, novoDado) {
+        const dados = await this.obterDadosArquivo();
+        const indice = dados.findIndex((h) => +h.id === +id);
+
+        if (indice === -1) {
+            throw Error('O usuário informado não existe');
+        }
+
+        const atual = { ...dados[indice], poder: novoDado.poder, nome: novoDado.nome };
+        dados.splice(indice, 1);
+
+        return await this.escreverArquivo([...dados, atual]);
     }
 }
 
